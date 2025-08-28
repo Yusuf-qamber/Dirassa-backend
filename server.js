@@ -4,7 +4,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const logger = require("morgan");
-
+const notesRouter = require('./controllers/notes.js')
 const app = express();
 
 // controllers
@@ -35,7 +35,7 @@ app.use((req, res, next) => {
 // public routes
 app.use("/auth", authRouter);
 app.use("/test-jwt", testJwtRouter);
-
+app.use('/:college/notes',notesRouter)
 // protected
 app.use(verifyToken);
 app.use("/users", userRouter);
