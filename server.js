@@ -1,0 +1,44 @@
+/* eslint-disable no-console */
+require("dotenv").config();
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const logger = require("morgan");
+
+const app = express();
+
+// controllers
+const testJwtRouter = require("./controllers/test-jwt");
+const authRouter = require("./controllers/auth");
+const userRouter = require("./controllers/users");
+const verifyToken = require("./middleware/verify-token");
+
+// connect DB
+mongoose.connect(process.env.MONGODB_URI);
+mongoose.connection.on("connected", () => {
+  console.log(`Connected to MongoDB ${mongoose.connection.name}.`);
+});
+
+// middleware (order matters)
+const allowed = ["http://localhost:5173", "http://127.0.0.1:5173"];
+app.use(cors({ origin: allowed, credentials: true }));
+app.use(express.json());
+app.use(logger("dev"));
+// ignore warning
+app.use((req, res, next) => {
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+  res.setHeader("Cross-Origin-Embedder-Policy", "unsafe-none");
+  next();
+});
+
+
+// public routes
+app.use("/auth", authRouter);
+app.use("/test-jwt", testJwtRouter);
+
+// protected
+app.use(verifyToken);
+app.use("/users", userRouter);
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`API on :${PORT}`));
