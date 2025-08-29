@@ -19,6 +19,20 @@ router.get("/", async (req, res) => {
 })
 
 
+//  SHOW A SINGLE NOTE
+router.get("/:noteId",async(req,res)=>{
+  try{
+    const note=await Note.findById(req.params.noteId).populate("owner").populate("comments.author")
+    if(!note){
+      return res.status(404).json({err:"Note not found"})
+    }
+    res.status(200).json(note)
+  }catch(err){
+    res.status(500).json(err)
+  }
+})
+
+
 // ----------------------Protected routes-----------
 router.use(verifyToken)
 // CREATE A NOTE UNDER A CERTAIN COLLEGE
@@ -33,19 +47,6 @@ router.post("/", async (req, res) => {
   }
 })
 
-
-//  SHOW A SINGLE NOTE
-router.get("/:noteId",async(req,res)=>{
-  try{
-    const note=await Note.findById(req.params.noteId).populate("owner").populate("comments.author")
-    if(!note){
-      return res.status(404).json({err:"Note not found"})
-    }
-    res.status(200).json(note)
-  }catch(err){
-    res.status(500).json(err)
-  }
-})
 
 
 
@@ -87,6 +88,63 @@ router.delete("/:noteId",async(req,res)=>{
 })
 
 
+router.post('/:noteId/comments', async (req,res)=>{
+try{
+    req.body.author = req.user._id;
+    const note =await Note.findById(req.params.noteId)
+    note.comments.push(req.body);
+    await note.save()
+
+    // Find the newly created comment:
+    const newComment = note.comments[note.comments.length - 1];
+    newComment._doc.author = req.user;
+
+    // Respond with the newComment:
+        res.status(201).json(newComment);
+
+}
+catch(err){
+ res.status(500).json(err);
+}
+})
+
+
+router.put('/:noteId/comments/:commentId', async (req, res) => {
+  try {
+    const note = await Note.findById(req.params.noteId);
+
+    const comment = note.comments.id(req.params.commentId);
+
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    if (!comment.author.equals(req.user._id)) {
+      return res.status(403).json({ message: "You are not authorized to edit" });
+    }
+
+    comment.content = req.body.content;
+    await note.save();
+
+    res.status(200).json({message: 'Comment updated successfully' ,comment});
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+
+
+router.delete('/:noteId/comments/:commentId', async (req, res) => {
+  try {
+    const note = await Note.findById(req.params.noteId);
+    note.comments.remove({ _id: req.params.commentId });
+    await note.save();
+    res.status(200).json({ message: 'Ok' });
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
 
 
 module.exports = router;
