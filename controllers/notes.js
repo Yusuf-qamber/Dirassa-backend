@@ -49,6 +49,42 @@ router.get("/:noteId",async(req,res)=>{
 
 
 
+//  UPDATE A SINGLE NOTE
+router.put("/:noteId",async(req,res)=>{
+  try{
+    const note=await Note.findById(req.params.noteId)
+    if(!note){
+      return res.status(404).send("Note not found")
+    }
+
+    if(!note.owner.equals(req.user._id)){
+      return res.status(403).send("You are note autharized")
+    }
+
+    const updateNote=await Note.findByIdAndUpdate(req.params.noteId, req.body ,{new:true})
+    res.status(200).json(updateNote)
+
+  }catch(err){
+    res.status(500).json(err)
+  }
+})
+
+
+
+//  DELETE A SINGLE NOTE
+router.delete("/:noteId",async(req,res)=>{
+  try{
+    const note= await Note.findById(req.params.noteId)
+    if(!note.owner.equals(req.user._id)){
+      return res.status(403).send("You are not autharized")
+    }
+
+    const deletedNote=await Note.findByIdAndDelete(req.params.noteId)
+    res.status(200).json(deletedNote)
+  }catch(err){
+    res.status(500).json(err)
+  }
+})
 
 
 
