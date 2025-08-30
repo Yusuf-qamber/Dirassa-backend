@@ -91,7 +91,7 @@ router.delete("/:noteId",async(req,res)=>{
 router.post('/:noteId/comments', async (req,res)=>{
 try{
     req.body.author = req.user._id;
-    const note =await Note.findById(req.params.noteId)
+    const note =await Note.findById(req.params.noteId).populate("comments.author", "username");
     note.comments.push(req.body);
     await note.save()
 
@@ -111,7 +111,7 @@ catch(err){
 
 router.put('/:noteId/comments/:commentId', async (req, res) => {
   try {
-    const note = await Note.findById(req.params.noteId);
+    const note = await Note.findById(req.params.noteId).populate("comments.author", "username");;
 
     const comment = note.comments.id(req.params.commentId);
 
