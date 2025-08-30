@@ -34,7 +34,7 @@ const noteSchema= new mongoose.Schema({
   college:{
     type:String,
     required:true,
-    enum:["IT","Business","Science","Law","Engineering","Art"],
+    enum:["it","business","science","law","engineering","art"],
   },
   comments:[commentSchema],
   
