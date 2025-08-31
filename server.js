@@ -4,13 +4,14 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const logger = require("morgan");
-const notesRouter = require('./controllers/notes.js')
 const app = express();
 
 // controllers
 const testJwtRouter = require("./controllers/test-jwt");
 const authRouter = require("./controllers/auth");
 const userRouter = require("./controllers/users");
+const notesRouter = require('./controllers/notes.js')
+const eventsRouter = require('./controllers/events.js')
 const verifyToken = require("./middleware/verify-token");
 
 // connect DB
@@ -36,6 +37,8 @@ app.use((req, res, next) => {
 app.use("/auth", authRouter);
 app.use("/test-jwt", testJwtRouter);
 app.use('/:college/notes',notesRouter)
+app.use('/:college/events',eventsRouter)
+
 // protected
 app.use(verifyToken);
 app.use("/users", userRouter);
