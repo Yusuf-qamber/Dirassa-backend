@@ -3,12 +3,17 @@ const verifyToken = require("../middleware/verify-token.js");
 const Note = require("../models/note.js");
 // 👇 ADD mergeParams: true
 const router = express.Router({ mergeParams: true });
+const existingCollege = Note.schema.path('college').enumValues;
 
 
 // -------------------Puplic routes------------------
 // GIT ALL NOTES UNDER A CERTAIN COLLEGE
 router.get("/", async (req, res) => {
+   if (!existingCollege.includes(req.params.college)) {
+    return res.status(404).json({ error: `College '${req.params.college}' does not exist` });
+  }
   try {
+    
     const notes = await Note.find({ college: req.params.college })
       .populate("owner")
       .sort({ createdAt: "desc" })
