@@ -21,8 +21,9 @@ mongoose.connection.on("connected", () => {
 });
 
 // middleware (order matters)
-const allowed = ["http://localhost:5173", "http://127.0.0.1:5173"];
-app.use(cors({ origin: allowed, credentials: true }));
+// const allowed = ["http://localhost:5173", "http://127.0.0.1:5173"];
+// app.use(cors({ origin: allowed, credentials: true }));
+app.use(cors());
 app.use(express.json());
 app.use(logger("dev"));
 // ignore warning
