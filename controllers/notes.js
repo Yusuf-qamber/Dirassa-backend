@@ -1,13 +1,13 @@
 const express = require("express");
 const verifyToken = require("../middleware/verify-token.js");
 const Note = require("../models/note.js");
-// 👇 ADD mergeParams: true
+
 const router = express.Router({ mergeParams: true });
 const existingCollege = Note.schema.path('college').enumValues;
 
 
 // -------------------Puplic routes------------------
-// GIT ALL NOTES UNDER A CERTAIN COLLEGE
+
 router.get("/", async (req, res) => {
    if (!existingCollege.includes(req.params.college)) {
     return res.status(404).json({ error: `College '${req.params.college}' does not exist` });
@@ -24,7 +24,7 @@ router.get("/", async (req, res) => {
 })
 
 
-//  SHOW A SINGLE NOTE
+
 router.get("/:noteId",async(req,res)=>{
   try{
     const note=await Note.findById(req.params.noteId).populate("owner").populate("comments.author")
@@ -40,11 +40,11 @@ router.get("/:noteId",async(req,res)=>{
 
 // ----------------------Protected routes-----------
 router.use(verifyToken)
-// CREATE A NOTE UNDER A CERTAIN COLLEGE
+
 router.post("/", async (req, res) => {
   try {
     req.body.owner = req.user._id
-    req.body.college = req.params.college   // <-- capture from URL
+    req.body.college = req.params.college   
     const note = await Note.create(req.body)
     res.status(200).json(note)
   } catch (err) {
@@ -55,7 +55,7 @@ router.post("/", async (req, res) => {
 
 
 
-//  UPDATE A SINGLE NOTE
+
 router.put("/:noteId",async(req,res)=>{
   try{
     const note=await Note.findById(req.params.noteId)
@@ -77,7 +77,7 @@ router.put("/:noteId",async(req,res)=>{
 
 
 
-//  DELETE A SINGLE NOTE
+
 router.delete("/:noteId",async(req,res)=>{
   try{
     const note= await Note.findById(req.params.noteId)
@@ -100,11 +100,11 @@ try{
     note.comments.push(req.body);
     await note.save()
 
-    // Find the newly created comment:
+    
     const newComment = note.comments[note.comments.length - 1];
     newComment._doc.author = req.user;
 
-    // Respond with the newComment:
+    
         res.status(201).json(newComment);
 
 }

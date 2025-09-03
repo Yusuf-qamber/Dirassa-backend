@@ -2,9 +2,9 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
-    username: { type: String, required: true },       // will use Google "name"
+    username: { type: String, required: true },       
     email: { type: String, index: true, lowercase: true, trim: true },
-    hashedPassword: {                                  // only required for local users
+    hashedPassword: {                              
       type: String,
       required: function () {
         return this.authProvider === "local";

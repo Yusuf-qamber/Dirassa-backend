@@ -17,7 +17,7 @@ const signToken = (user) =>
     { expiresIn: "7d" }
   );
 
-// ----- Local sign-up
+
 router.post("/sign-up", async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -38,7 +38,7 @@ router.post("/sign-up", async (req, res) => {
   }
 });
 
-// ----- Local sign-in
+
 router.post("/sign-in", async (req, res) => {
   try {
     const user = await User.findOne({ username: req.body.username });
@@ -53,8 +53,8 @@ router.post("/sign-in", async (req, res) => {
   }
 });
 
-// ----- Google sign-in
-// ----- Google sign-in
+
+
 router.post("/google-auth", async (req, res) => {
   const { credential, client_id } = req.body;
 

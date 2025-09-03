@@ -6,7 +6,7 @@ const existingCollege = Event.schema.path('college').enumValues;
 
 
 // -------------------Puplic routes------------------
-// GIT ALL EVENTS UNDER A CERTAIN COLLEGE
+
 router.get("/", async (req, res) => {
    if (!existingCollege.includes(req.params.college)) {
     return res.status(404).json({ error: `College '${req.params.college}' does not exist` });
@@ -23,7 +23,7 @@ router.get("/", async (req, res) => {
 })
 
 
-//  SHOW A SINGLE EVENT
+
 router.get("/:eventId",async(req,res)=>{
   try{
     const event=await Event.findById(req.params.eventId).populate("owner").populate("comments.author")
@@ -39,11 +39,11 @@ router.get("/:eventId",async(req,res)=>{
 
 // ----------------------Protected routes-----------
 router.use(verifyToken)
-// CREATE AN EVENT UNDER A CERTAIN COLLEGE
+
 router.post("/", async (req, res) => {
   try {
     req.body.owner = req.user._id
-    req.body.college = req.params.college   // <-- capture from URL
+    req.body.college = req.params.college   
     const event = await Event.create(req.body)
     res.status(200).json(event)
   } catch (err) {
@@ -52,7 +52,7 @@ router.post("/", async (req, res) => {
 })
 
 
-//  UPDATE A SINGLE EVENT
+
 router.put("/:eventId",async(req,res)=>{
   try{
     const event=await Event.findById(req.params.eventId)
@@ -74,7 +74,7 @@ router.put("/:eventId",async(req,res)=>{
 
 
 
-//  DELETE A SINGLE Event
+
 router.delete("/:eventId",async(req,res)=>{
   try{
     const event= await Event.findById(req.params.eventId)
@@ -97,11 +97,11 @@ try{
     event.comments.push(req.body);
     await event.save()
 
-    // Find the newly created comment:
+    
     const newComment = event.comments[event.comments.length - 1];
     newComment._doc.author = req.user;
 
-    // Respond with the newComment:
+    
         res.status(201).json(newComment);
 
 }
