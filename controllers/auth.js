@@ -2,13 +2,14 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { OAuth2Client } = require("google-auth-library");
+const cookieParser = require('cookie-parser');
 
 const router = express.Router();
 const User = require("../models/user");
 
 const SALT_ROUNDS = 12;
 const oAuthClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-
+const JWT_SECRET = process.env.JWT_SECRET;
 const signToken = (user) =>
   jwt.sign(
     { _id: user._id, username: user.username },
@@ -53,58 +54,58 @@ router.post("/sign-in", async (req, res) => {
 });
 
 // ----- Google sign-in
-router.post("/google", async (req, res) => {
+// ----- Google sign-in
+router.post("/google-auth", async (req, res) => {
+  const { credential, client_id } = req.body;
+
   try {
-    const { token } = req.body;               // <-- expect { token }
-    if (!token) return res.status(400).json({ err: "Missing token" });
-
+    // Verify token with Google's API
     const ticket = await oAuthClient.verifyIdToken({
-      idToken: token,
-      audience: process.env.GOOGLE_CLIENT_ID,
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID || client_id,
     });
-    const payload = ticket.getPayload();      // sub, email, name, picture, ...
+    const payload = ticket.getPayload();
+    const { email, given_name, family_name, sub, picture } = payload;
 
-    const googleId = payload.sub;
-    const firstName = payload.given_name || (payload.name ? payload.name.split(' ')[0] : 'User');
-
-
-    // find or create
-    let user = await User.findOne({ googleId: payload.sub });
+    // find or create user
+    let user = await User.findOne({ email });
     if (!user) {
-      // optionally check same email
-      user = await User.findOne({ email: payload.email }) || null;
-
-if (!user) {
       user = await User.create({
-        username: firstName,            // <- first name as username
-        googleId,
-        authProvider: 'google',
-        email: payload.email,
+        username: `${given_name} ${family_name}`,
+        email,
+        googleId: sub,
+        picture,
+        authProvider: "google",
       });
-    } else if (user.username !== firstName) {
-      // optional: keep username synced with current Google first name
-      user.username = firstName;
-      await user.save();
-    }
-      else {
-        user = await User.create({
-          username: payload.name,             // <-- your requested behavior
-          email: payload.email,
-          googleId: payload.sub,
-          picture: payload.picture,
-          authProvider: "google",
-        });
+    } else {
+      // ensure googleId and provider are set if user existed from local sign-up
+      if (!user.googleId) {
+        user.googleId = sub;
+        user.authProvider = "google";
+        await user.save();
       }
     }
 
-    return res.status(200).json({
-      token: signToken(user),
-      user: { _id: user._id, username: user.username, email: user.email, picture: user.picture },
+    // sign our own JWT
+    const token = jwt.sign({ _id: user._id, username: user.username }, JWT_SECRET, {
+      expiresIn: "7d",
     });
+
+    // Send token in JSON response and as cookie (optional)
+    res
+      .cookie("token", token, {
+        httpOnly: true,
+        secure: false,      // set true in production with HTTPS
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
+      .status(200)
+      .json({ token, user });
   } catch (err) {
-    console.error(err);
-    return res.status(400).json({ err: "Google login failed" });
+    console.error("Google auth error:", err.message || err);
+    res.status(400).json({ error: "Authentication failed", details: err.message || err });
   }
 });
+
 
 module.exports = router;

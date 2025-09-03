@@ -5,6 +5,10 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const logger = require("morgan");
 const app = express();
+ const { OAuth2Client } = require('google-auth-library');
+ const cookieParser = require('cookie-parser');
+ const client = new OAuth2Client();
+
 
 // controllers
 const testJwtRouter = require("./controllers/test-jwt");
@@ -23,15 +27,19 @@ mongoose.connection.on("connected", () => {
 // middleware (order matters)
 // const allowed = ["http://localhost:5173", "http://127.0.0.1:5173"];
 // app.use(cors({ origin: allowed, credentials: true }));
-app.use(cors());
+app.use(cors(
+  {  origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
+  credentials: true,}
+));
+app.use(cookieParser());
 app.use(express.json());
 app.use(logger("dev"));
 // ignore warning
-app.use((req, res, next) => {
-  res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
-  res.setHeader("Cross-Origin-Embedder-Policy", "unsafe-none");
-  next();
-});
+// app.use((req, res, next) => {
+//   // res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+//   // res.setHeader("Cross-Origin-Embedder-Policy", "unsafe-none");
+//   next();
+// });
 
 
 // public routes

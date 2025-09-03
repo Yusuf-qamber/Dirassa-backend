@@ -13,6 +13,11 @@ const userSchema = new mongoose.Schema(
     googleId: { type: String, index: true },
     picture: String,
     authProvider: { type: String, enum: ["local", "google"], default: "local" },
+    authSource:{
+    type:String,
+    enum:["self","google"],
+    default:"self"
+    },
   },
   { timestamps: true }
 );
