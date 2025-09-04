@@ -25,10 +25,11 @@ mongoose.connection.on("connected", () => {
 });
 
 
-app.use(cors(
-  {  origin: process.env.CLIENT_ORIGINS,
-  credentials: true,}
-));
+// app.use(cors(
+//   {  origin: process.env.CLIENT_ORIGINS,
+//   credentials: true,}
+// ));
+app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
 app.use(logger("dev"));
