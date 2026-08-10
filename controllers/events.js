@@ -1,6 +1,7 @@
 const express = require("express");
 const verifyToken = require("../middleware/verify-token.js");
 const Event = require("../models/event.js");
+const User=require("../models/user.js")
 const router = express.Router({ mergeParams: true });
 const existingCollege = Event.schema.path('college').enumValues;
 
@@ -45,6 +46,7 @@ router.post("/", async (req, res) => {
     req.body.owner = req.user._id
     req.body.college = req.params.college   
     const event = await Event.create(req.body)
+    await User.findByIdAndUpdate(req.user._id, { $push: { myEvents: event._id } })
     res.status(200).json(event)
   } catch (err) {
     res.status(500).json({ error: err.message })

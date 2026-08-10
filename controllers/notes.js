@@ -1,7 +1,7 @@
 const express = require("express");
 const verifyToken = require("../middleware/verify-token.js");
 const Note = require("../models/note.js");
-
+const User=require("../models/user.js")
 const router = express.Router({ mergeParams: true });
 const existingCollege = Note.schema.path('college').enumValues;
 
@@ -46,6 +46,7 @@ router.post("/", async (req, res) => {
     req.body.owner = req.user._id
     req.body.college = req.params.college   
     const note = await Note.create(req.body)
+    await User.findByIdAndUpdate(req.user._id,{$push:{mynotes:note._id}})
     res.status(200).json(note)
   } catch (err) {
     res.status(500).json({ error: err.message })
