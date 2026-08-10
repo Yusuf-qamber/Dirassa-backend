@@ -20,8 +20,16 @@ const signToken = (user) =>
 
 router.post("/sign-up", async (req, res) => {
   try {
-    const { username,emaill, password } = req.body;
-    const existing = await User.findOne({ username,email });
+    const { username,emaill, password,picture } = req.body;
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{12,}$/;
+
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({
+        err: "Password must be at least 12 characters and include an uppercase letter, a lowercase letter, a number, and a special character.",
+      });
+    }
+    const existing = await User.findOne({ $or:[{username},{email}] });
     if (existing) return res.status(409).json({ err: "User already exists" });
 
     const hashedPassword = bcrypt.hashSync(password, SALT_ROUNDS);

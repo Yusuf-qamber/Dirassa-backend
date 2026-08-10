@@ -8,7 +8,16 @@ const userSchema = new mongoose.Schema(
       type: String,
     },
     googleId: { type: String, index: true },
-    picture: String,
+    picture: {
+      type:String,
+      default:"https://res.cloudinary.com/dyrdy3hwe/image/upload/v1759161159/user_hinyhl.png",
+    },
+    myNotes:[{type:mongoose.Schema.Types.ObjectId,
+      ref:"Note"
+    }],
+    myEvents:[{type:mongoose.Schema.Types.ObjectId, 
+      ref:"Event"
+    }]
   },
   { timestamps: true }
 );
