@@ -6,18 +6,9 @@ const userSchema = new mongoose.Schema(
     email: { type: String, index: true, lowercase: true, trim: true },
     hashedPassword: {                              
       type: String,
-      required: function () {
-        return this.authProvider === "local";
-      },
     },
     googleId: { type: String, index: true },
     picture: String,
-    authProvider: { type: String, enum: ["local", "google"], default: "local" },
-    authSource:{
-    type:String,
-    enum:["self","google"],
-    default:"self"
-    },
   },
   { timestamps: true }
 );
